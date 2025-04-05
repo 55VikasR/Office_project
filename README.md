@@ -1,3 +1,4 @@
+vvbb
 Sub AllocateTasks()
 
     Dim wsData As Worksheet
@@ -8,28 +9,40 @@ Sub AllocateTasks()
     Dim analystCount As Integer
     Dim taskCount As Long
     Dim i As Long, j As Long
+    Dim analystIndex As Integer
 
     ' Set worksheets
     Set wsData = ThisWorkbook.Sheets("Data")
     Set wsFilter = ThisWorkbook.Sheets("Filter")
 
-    ' Get the last row of data
+    ' Get the last row of data and filter list
     lastRow = wsData.Cells(wsData.Rows.Count, "A").End(xlUp).Row
-
-    ' Get the last row of filter list
     filterRow = wsFilter.Cells(wsFilter.Rows.Count, "A").End(xlUp).Row
 
-    ' Count number of analysts (assuming they are in a specific range, adjust as needed)
-    analystCount = 8 ' Change this number based on actual analyst count
+    ' Set number of analysts
+    analystCount = 8 ' Change this to your actual number of analysts
 
-    ' Loop through each issuer ID in the filter list
-    For i = 1 To filterRow
+    ' Make sure there's a column for the assignment (assumed Column C here)
+    wsData.Cells(1, 3).Value = "Assigned To" ' Header for assignment
+
+    ' Loop through each Issuer ID in the filter list
+    For i = 2 To filterRow ' Assuming Filter tab has a header in row 1
 
         issuerID = wsFilter.Cells(i, 1).Value
+        analystIndex = 1
 
-        ' Initialize task count for the current issuer
-        taskCount = 0
-
-        ' Find all rows with the current issuer ID and count tasks
-        For j = 1 To lastRow
+        ' Loop through data and assign analysts round-robin
+        For j = 2 To lastRow ' Assuming Data sheet has a header in row 1
             If wsData.Cells(j, 1).Value = issuerID Then
+                wsData.Cells(j, 3).Value = "Analyst " & analystIndex
+                analystIndex = analystIndex + 1
+                If analystIndex > analystCount Then
+                    analystIndex = 1
+                End If
+            End If
+        Next j
+    Next i
+
+    MsgBox "Task allocation complete!", vbInformation
+
+End Sub
